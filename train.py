@@ -122,10 +122,16 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
     # Logging
     if wandb and wandb.run is None:
         opt.hyp = hyp  # add hyperparameters
-        wandb_run = wandb.init(config=opt, resume="allow",
-                               project='YOLOR' if opt.project == 'runs/train' else Path(opt.project).stem,
-                               name=save_dir.stem,
-                               id=ckpt.get('wandb_id') if 'ckpt' in locals() else None)
+        try:
+            wandb_run = wandb.init(config=opt, resume="allow",
+                                   project='YOLOR' if opt.project == 'runs/train' else Path(opt.project).stem,
+                                   name=save_dir.stem,
+                                   id=ckpt.get('wandb_id') if 'ckpt' in locals() else None)
+        except wandb.errors.UsageError:
+           wandb_run = wandb.init(config=opt, resume="allow", settings=wandb.Settings(start_method="thread"), 
+                                   project='YOLOR' if opt.project == 'runs/train' else Path(opt.project).stem,
+                                   name=save_dir.stem,
+                                   id=ckpt.get('wandb_id') if 'ckpt' in locals() else None)
 
     # Resume
     start_epoch, best_fitness = 0, 0.0
