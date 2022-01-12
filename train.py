@@ -431,7 +431,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
                 elif epoch >= 420: 
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
-                if opt.save_every_five and epoch % 5 == 0:
+                if opt.save_every_five and epoch % 5 == 0 and epoch > 0:
                     torch.save(ckpt, wdir / 'ep_{:03d}.pt'.format(epoch))
                 del ckpt
         # end epoch ----------------------------------------------------------------------------------------------------
