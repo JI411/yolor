@@ -160,11 +160,13 @@ def test(data,
 
             # W&B logging
             if plots and len(wandb_images) < log_imgs:
-                box_data = [{"position": {"minX": xyxy[0], "minY": xyxy[1], "maxX": xyxy[2], "maxY": xyxy[3]},
-                             "class_id": int(cls),
-                             "box_caption": "%s %.3f" % (names[cls], conf),
-                             "scores": {"class_score": conf},
-                             "domain": "pixel"} for *xyxy, conf, cls in pred.tolist()]
+                box_data = []
+                for *xyxy, conf, cls in pred.tolist():
+                    box_data.append({"position": {"minX": xyxy[0], "minY": xyxy[1], "maxX": xyxy[2], "maxY": xyxy[3]},
+                                     "class_id": int(cls),
+                                     "box_caption": "%s %.3f" % (names[cls], conf),
+                                     "scores": {"class_score": conf},
+                                     "domain": "pixel"})
                 boxes = {"predictions": {"box_data": box_data, "class_labels": names}}
                 wandb_images.append(wandb.Image(img[si], boxes=boxes, caption=path.name))
 
