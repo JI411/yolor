@@ -103,9 +103,13 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
         else:
             pg0.append(v)  # all else
 
-    if opt.adam:
+    hyp['optimizer'] = hyp.get('optimizer', None)
+    if hyp['optimizer'] == 'adam':
         optimizer = optim.Adam(pg0, lr=hyp['lr0'], betas=(hyp['momentum'], 0.999))  # adjust beta1 to momentum
+    elif hyp['optimizer'] == 'sgd':
+        optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
     else:
+        print('WARNING: optimizer must be one of adam, sgd. Use sgd now.')
         optimizer = optim.SGD(pg0, lr=hyp['lr0'], momentum=hyp['momentum'], nesterov=True)
 
     optimizer.add_param_group({'params': pg1, 'weight_decay': hyp['weight_decay']})  # add pg1 with weight_decay
@@ -492,7 +496,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
-    parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
+    # parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
     parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
     parser.add_argument('--local_rank', type=int, default=-1, help='DDP parameter, do not modify')
     parser.add_argument('--log-imgs', type=int, default=16, help='number of images for W&B logging, max 100')
