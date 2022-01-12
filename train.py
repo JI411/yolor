@@ -413,6 +413,10 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'best_{:03d}.pt'.format(epoch))
                 if best_fitness == fi:
                     torch.save(ckpt, wdir / 'best_overall.pt')
+                    if wandb and (epoch == epochs - 1):
+                        artifact = wandb.Artifact('best_overall.pt', type='model')
+                        artifact.add_file(wdir / 'best_overall.pt')
+                        wandb_run.log_artifact(artifact)
                 if best_fitness_p == fi_p:
                     torch.save(ckpt, wdir / 'best_p.pt')
                 if best_fitness_r == fi_r:
@@ -431,8 +435,12 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
                 elif epoch >= 420: 
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
-                if opt.save_every_five and epoch % 5 == 0 and epoch > 0:
+                if opt.save_every_five and ((epoch + 1) % 5) == 0:
                     torch.save(ckpt, wdir / 'ep_{:03d}.pt'.format(epoch))
+                    if wandb:
+                        artifact = wandb.Artifact('ep_{:03d}.pt'.format(epoch), type='model')
+                        artifact.add_file(wdir / 'ep_{:03d}.pt'.format(epoch))
+                        wandb_run.log_artifact(artifact)
                 del ckpt
         # end epoch ----------------------------------------------------------------------------------------------------
     # end training
