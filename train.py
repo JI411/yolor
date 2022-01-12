@@ -431,6 +431,8 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
                 elif epoch >= 420: 
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
+                if opt.save_every_five and epoch % 5 == 0:
+                    torch.save(ckpt, wdir / 'ep_{:03d}.pt'.format(epoch))
                 del ckpt
         # end epoch ----------------------------------------------------------------------------------------------------
     # end training
@@ -474,6 +476,7 @@ if __name__ == '__main__':
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--notest', action='store_true', help='only test final epoch')
     parser.add_argument('--noautoanchor', action='store_true', help='disable autoanchor check')
+    parser.add_argument('--save-every-five', action='store_true', help='save model every five epoch')
     parser.add_argument('--evolve', action='store_true', help='evolve hyperparameters')
     parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
     parser.add_argument('--cache-images', action='store_true', help='cache images for faster training')
