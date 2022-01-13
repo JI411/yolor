@@ -1,0 +1,181 @@
+method: bayes
+metric:
+  goal: maximize
+  name: metrics/mAP_0.5
+project: yolor
+entity: ji411
+parameters:
+  optimizer:
+    distribution: categorical
+    values:
+    - adam
+    - sgd
+  weights:
+    distribution: categorical
+    values:
+    - yolor_p6.pt
+  cfg:
+    distribution: categorical
+    values:
+    - cfg/yolor_p6.cfg
+  anchor_t:
+    distribution: categorical
+    values:
+    - 4
+  batch_size:
+    distribution: categorical
+    values:
+    - 1 # TODO: change to max
+  box:
+    distribution: categorical
+    values:
+    - 0.05
+    - 0.025
+    - 0.03
+  cls:
+    distribution: categorical
+    values:
+    - 0.5
+  cls_pw:
+    distribution: categorical
+    values:
+    - 1
+  copy_paste:
+    distribution: categorical
+    values:
+    - 0
+  data:
+    distribution: categorical
+    values:
+    - data/coco128.yaml
+  degrees:
+    distribution: int_uniform
+    max: 30
+    min: 0
+  epochs:
+    distribution: categorical
+    values:
+    - 1 # TODO: 25 epochs
+  fl_gamma:
+    distribution: categorical
+    values:
+    - 0
+    - 0.5
+    - 1
+    - 1.5
+  fliplr:
+    distribution: categorical
+    values:
+    - 0.5
+    - 0.2
+    - 0.6
+  flipud:
+    distribution: categorical
+    values:
+    - 0
+  hsv_h:
+    distribution: categorical
+    values:
+    - 0.015
+    - 0.01
+    - 0.02
+    - 0.03
+  hsv_s:
+    distribution: categorical
+    values:
+    - 0.3
+    - 0.5
+    - 0.7
+  hsv_v:
+    distribution: categorical
+    values:
+    - 0.4
+    - 0.2
+    - 0.1
+  iou_t:
+    distribution: categorical
+    values:
+    - 0.1
+    - 0.15
+    - 0.2
+    - 0.3
+    - 0.4
+  lr0:
+    distribution: uniform
+    max: 0.1
+    min: 0.001
+  lrf:
+    distribution: categorical
+    values:
+    - 0.1
+    - 0.2
+    - 0.3
+  mixup:
+    distribution: uniform
+    max: 0.5
+    min: 0
+  momentum:
+    distribution: categorical
+    values:
+    - 0.937
+    - 0.99
+  mosaic:
+    distribution: categorical
+    values:
+    - 1
+    - 0.9
+    - 0.8
+  obj:
+    distribution: uniform
+    max: 1.5
+    min: 0.5
+  obj_pw:
+    distribution: uniform
+    max: 1.5
+    min: 0.5
+  perspective:
+    distribution: categorical
+    values:
+    - 0
+    - 0.001
+    - 0.01
+    - 0.1
+  scale:
+    distribution: uniform
+    max: 0.75
+    min: 0.3
+  shear:
+    distribution: categorical
+    values:
+    - 0
+    - 0.1
+    - 0.01
+  translate:
+    distribution: uniform
+    max: 0.5
+    min: 0.1
+  warmup_bias_lr:
+    distribution: categorical
+    values:
+    - 0.1
+    - 0.2
+    - 0.3
+    - 0.4
+  warmup_epochs:
+    distribution: categorical
+    values:
+    - 3
+    - 1.5
+    - 2
+  warmup_momentum:
+    distribution: categorical
+    values:
+    - 0.8
+    - 0.9
+    - 1
+  weight_decay:
+    distribution: uniform
+    max: 0.0006
+    min: 0.0002
+
+program: sweep.py
