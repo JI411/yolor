@@ -430,7 +430,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'best_f.pt')
                 if epoch == 0:
                     torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                if ((epoch + 1) % 25) == 0:
+                if not opt.save_every_five and ((epoch + 1) % 25) == 0:
                     torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
                 if epoch >= (epochs - 5):
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
@@ -440,12 +440,13 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'ep_{:03d}.pt'.format(epoch))
                     if wandb:
                         artifact = wandb.Artifact('ep_{:03d}.pt'.format(epoch), type='model')
-                        artifact.add_file(wdir / 'ep_{:03d}.pt'.format(epoch))
-                        wandb_run.log_artifact(artifact)
+                        artifact.add_file(wdir / 'ep_{:03d}.pt'.format(epoch), name=wandb_run.id)
+                        wandb_run.log_artifact(artifact, aliases=['ep_{:03d}.pt'])
                 if wandb and (epoch == epochs - 1):
+                    strip_optimizer(wdir / 'best_overall.pt')
                     artifact = wandb.Artifact('best_overall.pt', type='model')
-                    artifact.add_file(wdir / 'best_overall.pt')
-                    wandb_run.log_artifact(artifact)
+                    artifact.add_file(wdir / 'best_overall.pt', name=wandb_run.id)
+                    wandb_run.log_artifact(artifact, aliases=['best_overall.pt', 'stripped'])
                 del ckpt
         # end epoch ----------------------------------------------------------------------------------------------------
     # end training
