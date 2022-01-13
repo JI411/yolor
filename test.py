@@ -83,7 +83,7 @@ def test(data,
         data = yaml.load(f, Loader=yaml.FullLoader)  # model dict
     check_dataset(data)  # check
     nc = 1 if single_cls else int(data['nc'])  # number of classes
-    iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
+    iouv = torch.linspace(0.3, 0.8, 11).to(device)  # iou vector for mAP@0.3:0.8
     niou = iouv.numel()
 
     # Logging
@@ -106,7 +106,7 @@ def test(data,
     except:
         names = load_classes(opt.names)
     coco91class = coco80_to_coco91_class()
-    s = ('%20s' + '%12s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@.5', 'mAP@.5:.95')
+    s = ('%20s' + '%12s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@.3', 'mAP@.3:.8')
     p, r, f1, mp, mr, map50, map, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3, device=device)
     jdict, stats, ap, ap_class, wandb_images = [], [], [], [], []
@@ -277,7 +277,7 @@ def test(data,
             eval.evaluate()
             eval.accumulate()
             eval.summarize()
-            map, map50 = eval.stats[:2]  # update results (mAP@0.5:0.95, mAP@0.5)
+            map, map50 = eval.stats[:2]  # update results (mAP@0.3:0.8, mAP@0.3)
         except Exception as e:
             print('ERROR: pycocotools unable to run: %s' % e)
 

@@ -83,7 +83,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
         model.load_state_dict(state_dict, strict=False)
         print('Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weights))  # report
     else:
-        model = Darknet(opt.cfg).to(device) # create
+        model = Darknet(opt.cfg).to(device)  # create
 
     # Optimizer
     nbs = 64  # nominal batch size
@@ -132,7 +132,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                                    name=save_dir.stem,
                                    id=ckpt.get('wandb_id') if 'ckpt' in locals() else None)
         except wandb.errors.UsageError:
-           wandb_run = wandb.init(config=opt, resume="allow", settings=wandb.Settings(start_method="thread"), 
+            wandb_run = wandb.init(config=opt, resume="allow", settings=wandb.Settings(start_method="thread"),
                                    project='YOLOR' if opt.project == 'runs/train' else Path(opt.project).stem,
                                    name=save_dir.stem,
                                    id=ckpt.get('wandb_id') if 'ckpt' in locals() else None)
@@ -168,7 +168,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
         del ckpt, state_dict
 
     # Image sizes
-    gs = 64 #int(max(model.stride))  # grid size (max stride)
+    gs = 64  # int(max(model.stride))  # grid size (max stride)
     imgsz, imgsz_test = [check_img_size(x, gs) for x in opt.img_size]  # verify imgsz are gs-multiples
 
     # DP mode
@@ -198,7 +198,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
     # Process 0
     if rank in [-1, 0]:
         ema.updates = start_epoch * nb // accumulate  # set EMA updates
-        testloader = create_dataloader(test_path, imgsz_test, batch_size*2, gs, opt,
+        testloader = create_dataloader(test_path, imgsz_test, batch_size * 2, gs, opt,
                                        hyp=hyp, cache=opt.cache_images and not opt.notest, rect=True,
                                        rank=-1, world_size=opt.world_size, workers=opt.workers)[0]  # testloader
 
@@ -231,15 +231,15 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
     nw = max(round(hyp['warmup_epochs'] * nb), 1000)  # number of warmup iterations, max(3 epochs, 1k iterations)
     # nw = min(nw, (epochs - start_epoch) / 2 * nb)  # limit warmup to < 1/2 of training
     maps = np.zeros(nc)  # mAP per class
-    results = (0, 0, 0, 0, 0, 0, 0)  # P, R, mAP@.5, mAP@.5-.95, val_loss(box, obj, cls)
+    results = (0, 0, 0, 0, 0, 0, 0)  # P, R, mAP@.3, mAP@.3-.8, val_loss(box, obj, cls)
     scheduler.last_epoch = start_epoch - 1  # do not move
     scaler = amp.GradScaler(enabled=cuda)
     logger.info('Image sizes %g train, %g test\n'
                 'Using %g dataloader workers\nLogging results to %s\n'
                 'Starting training for %g epochs...' % (imgsz, imgsz_test, dataloader.num_workers, save_dir, epochs))
-    
+
     torch.save(model, wdir / 'init.pt')
-    
+
     for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
         model.train()
 
@@ -344,24 +344,24 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
             if not opt.notest or final_epoch:  # Calculate mAP
                 if epoch >= 3:
                     results, maps, times = test.test(opt.data,
-                                                 batch_size=batch_size*2,
-                                                 imgsz=imgsz_test,
-                                                 model=ema.ema.module if hasattr(ema.ema, 'module') else ema.ema,
-                                                 single_cls=opt.single_cls,
-                                                 dataloader=testloader,
-                                                 save_dir=save_dir,
-                                                 plots=plots and final_epoch,
-                                                 log_imgs=opt.log_imgs if wandb else 0)
+                                                     batch_size=batch_size * 2,
+                                                     imgsz=imgsz_test,
+                                                     model=ema.ema.module if hasattr(ema.ema, 'module') else ema.ema,
+                                                     single_cls=opt.single_cls,
+                                                     dataloader=testloader,
+                                                     save_dir=save_dir,
+                                                     plots=plots and final_epoch,
+                                                     log_imgs=opt.log_imgs if wandb else 0)
 
             # Write
             with open(results_file, 'a') as f:
-                f.write(s + '%10.4g' * 7 % results + '\n')  # P, R, mAP@.5, mAP@.5-.95, val_loss(box, obj, cls)
+                f.write(s + '%10.4g' * 7 % results + '\n')  # P, R, mAP@.3, mAP@.3-.8, val_loss(box, obj, cls)
             if len(opt.name) and opt.bucket:
                 os.system('gsutil cp %s gs://%s/results/results%s.txt' % (results_file, opt.bucket, opt.name))
 
             # Log
             tags = ['train/box_loss', 'train/obj_loss', 'train/cls_loss',  # train loss
-                    'metrics/precision', 'metrics/recall', 'metrics/mAP_0.5', 'metrics/mAP_0.5:0.95',
+                    'metrics/precision', 'metrics/recall', 'metrics/mAP_0.3', 'metrics/mAP_0.3:0.8',
                     'val/box_loss', 'val/obj_loss', 'val/cls_loss',  # val loss
                     'x/lr0', 'x/lr1', 'x/lr2']  # params
             for x, tag in zip(list(mloss[:-1]) + list(results) + lr, tags):
@@ -371,13 +371,14 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     wandb.log({tag: x, 'epoch': epoch})  # W&B
 
             # Update best mAP
-            fi = fitness(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
-            fi_p = fitness_p(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
-            fi_r = fitness_r(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
-            fi_ap50 = fitness_ap50(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
-            fi_ap = fitness_ap(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
+            fi = fitness(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.3, mAP@.3-.8]
+            fi_p = fitness_p(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.3, mAP@.3-.8]
+            fi_r = fitness_r(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.3, mAP@.3-.8]
+            fi_ap50 = fitness_ap50(
+                np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.3, mAP@.3-.8]
+            fi_ap = fitness_ap(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.3, mAP@.3-.8]
             if (fi_p > 0.0) or (fi_r > 0.0):
-                fi_f = fitness_f(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
+                fi_f = fitness_f(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.3, mAP@.3-.8]
             else:
                 fi_f = 0.0
             if fi > best_fitness:
@@ -429,11 +430,11 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     torch.save(ckpt, wdir / 'best_f.pt')
                 if epoch == 0:
                     torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                if ((epoch+1) % 25) == 0:
+                if ((epoch + 1) % 25) == 0:
                     torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                if epoch >= (epochs-5):
+                if epoch >= (epochs - 5):
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
-                elif epoch >= 420: 
+                elif epoch >= 420:
                     torch.save(ckpt, wdir / 'last_{:03d}.pt'.format(epoch))
                 if opt.save_every_five and ((epoch + 1) % 5) == 0:
                     torch.save(ckpt, wdir / 'ep_{:03d}.pt'.format(epoch))
@@ -442,9 +443,9 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                         artifact.add_file(wdir / 'ep_{:03d}.pt'.format(epoch))
                         wandb_run.log_artifact(artifact)
                 if wandb and (epoch == epochs - 1):
-                        artifact = wandb.Artifact('best_overall.pt', type='model')
-                        artifact.add_file(wdir / 'best_overall.pt')
-                        wandb_run.log_artifact(artifact)
+                    artifact = wandb.Artifact('best_overall.pt', type='model')
+                    artifact.add_file(wdir / 'best_overall.pt')
+                    wandb_run.log_artifact(artifact)
                 del ckpt
         # end epoch ----------------------------------------------------------------------------------------------------
     # end training
@@ -463,8 +464,11 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
         if plots:
             plot_results(save_dir=save_dir)  # save as results.png
             if wandb:
-                wandb.log({"Results": [wandb.Image(str(save_dir / x), caption=x) for x in
-                                       ['results.png', 'precision-recall_curve.png']]})
+                try:
+                    wandb.log({"Results": [wandb.Image(str(save_dir / x), caption=x) for x in
+                                           ['results.png', 'precision-recall_curve.png']]})
+                except FileNotFoundError as exception:  # TODO: fix
+                    print(exception)
         logger.info('%g epochs completed in %.3f hours.\n' % (epoch - start_epoch + 1, (time.time() - t0) / 3600))
     else:
         dist.destroy_process_group()
