@@ -35,9 +35,10 @@ def sweep():
     opt.global_rank = int(os.environ['RANK']) if 'RANK' in os.environ else -1
 
     device = select_device(opt.device, batch_size=opt.batch_size)
+    opt.sweep = True
 
     # train
-    train(hyp_dict, opt, device)
+    train(hyp_dict, opt, device, wandb=wandb)
 
 
 if __name__ == "__main__":

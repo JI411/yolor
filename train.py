@@ -124,7 +124,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
     # plot_lr_scheduler(optimizer, scheduler, epochs)
 
     # Logging
-    if wandb and wandb.run is None:
+    if (wandb and wandb.run is None) or opt.sweep:
         opt.hyp = hyp  # add hyperparameters
         try:
             wandb_run = wandb.init(config=opt, resume="allow",
