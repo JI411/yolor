@@ -3,7 +3,7 @@ metric:
   goal: maximize
   name: metrics/mAP_0.3:0.8
 project: yolor
-entity: ji411
+entity: sber_molodnyak
 parameters:
   optimizer:
     distribution: categorical
@@ -25,7 +25,7 @@ parameters:
   batch_size:
     distribution: categorical
     values:
-    - 2 # TODO: change to max
+    - 3 # TODO: change to max
   box:
     distribution: categorical
     values:
@@ -55,7 +55,7 @@ parameters:
   epochs:
     distribution: categorical
     values:
-    - 2 # TODO: 25 epochs
+    - 25
   fl_gamma:
     distribution: categorical
     values:
@@ -102,7 +102,7 @@ parameters:
     - 0.4
   lr0:
     distribution: uniform
-    max: 0.01
+    max: 0.005
     min: 0.0005
   lrf:
     distribution: categorical
@@ -120,11 +120,9 @@ parameters:
     - 0.937
     - 0.99
   mosaic:
-    distribution: categorical
-    values:
-    - 1
-    - 0.9
-    - 0.8
+    distribution: uniform
+    max: 1.0
+    min: 0.0
   obj:
     distribution: uniform
     max: 1.5
@@ -143,7 +141,7 @@ parameters:
   scale:
     distribution: uniform
     max: 0.75
-    min: 0.3
+    min: 0.0
   shear:
     distribution: categorical
     values:
@@ -153,10 +151,11 @@ parameters:
   translate:
     distribution: uniform
     max: 0.5
-    min: 0.1
+    min: 0.0
   warmup_bias_lr:
     distribution: categorical
     values:
+    - 0.05
     - 0.1
     - 0.2
     - 0.3
