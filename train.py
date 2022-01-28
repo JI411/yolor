@@ -440,7 +440,7 @@ def train(hyp, opt, device, tb_writer=None, wandb=None):
                     if wandb:
                         artifact = wandb.Artifact('ep_{:03d}.pt'.format(epoch), type='model')
                         artifact.add_file(wdir / 'ep_{:03d}.pt'.format(epoch), name=wandb_run.id)
-                        wandb_run.log_artifact(artifact, aliases=['ep_{:03d}.pt'])
+                        wandb_run.log_artifact(artifact, aliases=['ep_{:03d}.pt'.format(epoch)])
                 if wandb and (epoch == epochs - 1):
                     strip_optimizer(wdir / 'best_overall.pt')
                     artifact = wandb.Artifact('best_overall.pt', type='model')
